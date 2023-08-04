@@ -25,8 +25,6 @@ connectDB();
 
 // Route files
 const auth = require("./routes/student");
-const batch = require("./routes/batch");
-const course = require("./routes/course");
 
 // Body parser
 app.use(express.json());
@@ -36,7 +34,7 @@ app.use(bodyParser.json({}));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Dev logging middleware
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === "production") {
   app.use(morgan("dev"));
 }
 
@@ -55,8 +53,6 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Mount routers
 app.use("/api/v1/auth", auth);
-app.use("/api/v1/batch", batch);
-app.use("/api/v1/course", course);
 
 const PORT = process.env.PORT || 5000;
 

@@ -1,7 +1,6 @@
 const asyncHandler = require("../middleware/async");
 const Student = require("../models/student");
-const Batch = require("../models/batch");
-const Course = require("../models/course");
+
 const path = require("path");
 const fs = require("fs");
 
@@ -47,10 +46,6 @@ exports.register = asyncHandler(async (req, res, next) => {
     return res.status(400).send({ message: "Student already exists" });
   }
 
-  const batch = await Batch.findOne({ _id: req.body.batch });
-  if (!batch) {
-    return res.status(400).send({ message: "Invalid Batch" });
-  }
   await Student.create(req.body);
 
   res.status(200).json({
@@ -88,70 +83,9 @@ exports.login = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/students/search/:batchId
 // @access  Private
 
-exports.searchByBatch = asyncHandler(async (req, res, next) => {
-  // const students = await Student.find({ batch: req.params.batchId });
-  // if (!students) {
-  //   return res.status(404).send({ message: "No students found" });
-  // }
-  // res.status(200).json({
-  //   success: true,
-  //   count: students.length,
-  //   data: students,
-  // });
-
-  const batchId = req.params.batchId;
-  // dont show password
-
-  Student.find({ batch: batchId })
-    .populate("batch", "-__v")
-    .populate("course", "-__v")
-    .select("-password -__v")
-    .then((student) => {
-      res.status(201).json({
-        success: true,
-        message: "List of students by batch",
-        data: student,
-      });
-    })
-    .catch((err) => {
-      res.status(500).json({
-        success: false,
-        message: err,
-      });
-    });
-});
-
 // @desc    Search student by course
 // @route   GET /api/v1/students/search/:courseId
 // @access  Private
-
-exports.searchByCourse = asyncHandler(async (req, res, next) => {
-  const courseId = req.params.courseId;
-
-  Student.find({
-    course: {
-      $elemMatch: {
-        $eq: { _id: courseId },
-      },
-    },
-  })
-    .select("-password -__v")
-    .populate("batch", "-__v")
-    .populate("course", "-__v")
-    .then((student) => {
-      res.status(201).json({
-        success: true,
-        message: "List of students by course",
-        data: student,
-      });
-    })
-    .catch((err) => {
-      res.status(500).json({
-        success: false,
-        message: err,
-      });
-    });
-});
 
 // @desc    Update student
 // @route   PUT /api/v1/students/:id
@@ -184,7 +118,7 @@ exports.getMe = asyncHandler(async (req, res, next) => {
   const student = await Student.findById(req.params.id);
 
   res.status(200).json({
-    student
+    student,
   });
 });
 
@@ -263,9 +197,9 @@ const sendTokenResponse = (Student, statusCode, res) => {
   };
 
   // Cookie security is false .if you want https then use this code. do not use in development time
-  if (process.env.NODE_ENV === "proc") {
-    options.secure = true;
-  }
+  // if (process.env.NODE_ENV === "proc") {
+  //   options.secure = true;
+  // }
   //we have created a cookie with a token
 
   res
